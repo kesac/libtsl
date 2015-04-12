@@ -24,83 +24,8 @@
 
 local lib = {}
 
-function lib._play(animation, x, y)
-	animation.tick = 0
-	animation.currentframe = 1
-	animation.x = x or 0
-	animation.y = y or 0
-	animation.loop = false
-	animation.active = true
-end
-
-function lib._loop(animation, x, y)
-	if not animation.active then
-		animation.tick = 0
-		animation.currentframe = 1
-		animation.x = x or 0
-		animation.y = y or 0
-		animation.isLooping = true
-		animation.active = true
-	end
-end
-
-function lib._stop(animation)
-	animation.active = false
-end
-
-function lib._draw(animation)
-	if animation.active then
-		--[[
-		print(animation.image:getWidth())
-		print(#animation.quads)
-		print(animation.currentframe)
-		print(animation.x)
-		print(animation.y)
-		--]]
-		
-		--[[
-		if not animation.image then print("Image is null") end
-		if not animation.quads[animation.currentframe] then print("Quad chosen is null")
-			print("Quads total: " .. #animation.quads)
-			print("Currentframe: " .. animation.currentframe)
-		end
-		--]]
-		
-		love.graphics.drawq(
-			animation.image,
-			animation.quads[animation.currentframe],
-			animation.x,
-			animation.y
-		)
-	end
-end
-
-function lib._update(animation,dt)
-	
-	if animation.active then
-		animation.tick = animation.tick + dt
-		
-		if animation.tick > animation.framespeed then
-			animation.tick = 0
-			animation.currentframe = animation.currentframe + 1
-			
-			--if animation.currentframe > animation.endframe then -- Incorrect		
-			if animation.currentframe > #animation.quads then			
-				if not animation.isLooping then
-					animation.active = false
-				end
-				
-				animation.currentframe = 1
-			end
-			
-		end
-	end
-	
-end
-
-
 -- uses lua-based indexing
-function lib.newAnimation(img,cols,rows,framespeed,startframe,endframe)
+function lib.create(img,cols,rows,framespeed,startframe,endframe)
 
 	local anima = {}
 	anima.image = img
@@ -141,9 +66,7 @@ function lib.newAnimation(img,cols,rows,framespeed,startframe,endframe)
 			anima.image:getWidth(),
 			anima.image:getHeight()
 		)
-		
-		-- print(quad_col..','..quad_row)
-		
+
 		table.insert(anima.quads, quad)
 		
 	end
@@ -157,6 +80,64 @@ function lib.newAnimation(img,cols,rows,framespeed,startframe,endframe)
 	
 	return anima
 
+end
+
+function lib._play(animation, x, y)
+	animation.tick = 0
+	animation.currentframe = 1
+	animation.x = x or 0
+	animation.y = y or 0
+	animation.loop = false
+	animation.active = true
+end
+
+function lib._loop(animation, x, y)
+	if not animation.active then
+		animation.tick = 0
+		animation.currentframe = 1
+		animation.x = x or 0
+		animation.y = y or 0
+		animation.isLooping = true
+		animation.active = true
+	end
+end
+
+function lib._stop(animation)
+	animation.active = false
+end
+
+function lib._draw(animation)
+	if animation.active then	
+		love.graphics.drawq(
+			animation.image,
+			animation.quads[animation.currentframe],
+			animation.x,
+			animation.y
+		)
+	end
+end
+
+function lib._update(animation,dt)
+	
+	if animation.active then
+		animation.tick = animation.tick + dt
+		
+		if animation.tick > animation.framespeed then
+			animation.tick = 0
+			animation.currentframe = animation.currentframe + 1
+			
+			--if animation.currentframe > animation.endframe then -- Incorrect		
+			if animation.currentframe > #animation.quads then			
+				if not animation.isLooping then
+					animation.active = false
+				end
+				
+				animation.currentframe = 1
+			end
+			
+		end
+	end
+	
 end
 
 

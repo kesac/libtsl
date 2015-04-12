@@ -21,18 +21,12 @@
 --]]
 
 local lib = {}
-local lib_anima = require 'lib.animation'
 
 local animations = {}
 local animation_instances = {}
 
-function lib.defineAnimation(id,img,cols,rows,framespeed,startframe,endframe)
-
-	if not startframe then startframe = 1 end
-	if not endframe then endframe = cols*rows end
-	
-	animations[id] = lib_anima.newAnimation(img,cols,rows,framespeed,startframe,endframe)
-
+function lib.defineAnimation(id, spriteanimation)
+	animations[id] = spriteanimation
 end
 
 function lib.get(id)
