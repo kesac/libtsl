@@ -28,12 +28,7 @@ local FILE_EXTENSION = '.lua'
 -- Writes the specified table to disk into
 -- %appdata%/LOVE/<identity>/<savename>.lua.
 function lib.save(t,savename)
-
-    if string.sub(savename, #savename - #FILE_EXTENSION) == FILE_EXTENSION then
-        savename = savename .. FILE_EXTENSION
-    end
-
-	love.filesystem.write(savename, 'return ' .. lib._tableToString(t))
+	love.filesystem.write(savename .. FILE_EXTENSION, 'return ' .. lib._tableToString(t))
 end
 
 -- Loads the specified savefile from
