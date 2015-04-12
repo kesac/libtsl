@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -22,8 +22,9 @@
 
 -- Mediator for game scenes. Allows scenes to 
 -- communicate and transition with each other.
+-- Supports fade in and outs.
 
-local director = {}
+local manager = {}
 
 -- Scenes are simply tables that can define
 -- one of the six functions: init, load
@@ -31,25 +32,34 @@ local director = {}
 local scenes = {}
 local currentScene
 
--- Adds a scene to this director with the specified id
-function director.addScene(scene, id)
+local sceneFader    = require 'managertsl.scenefader'
+local sceneFaderId = '_fader'
+local defaultFadeoutTime = sceneFader.fadeoutTime
+local defaultFadeinTime = sceneFader.fadeinTime
 
-	if scene.init then
-		scene.init()
+-- Adds a scene to this manager with the specified id
+function manager.addScene(scene, id)
+
+    if scene.initialize then
+		scene.initialize(manager)
 	end
 
 	scenes[id] = scene
 end
 
 -- Gets the scene with the specified id
-function director.getScene(id)
+function manager.getScene(id)
 	if id then
 		return scenes[id]
 	end
 end
 
+function manager.getCurrentScene()
+	return currentScene
+end
+
 -- Promotes the scene with the specified id to current status
-function director.setCurrentScene(id, notify)
+function manager.setCurrentScene(id, notify)
 
 	if notify == nil then notify = true end
 
@@ -70,36 +80,45 @@ function director.setCurrentScene(id, notify)
 	end
 end
 
-function director.getCurrentScene()
-	return currentScene
+-- Identical to setCurrentScene() except it gradually fades out the
+-- current scene and fades in the next scene.
+function manager.transitionTo(nextSceneID,fadeoutTime,fadeinTime)
+
+	sceneFader.fadeoutTime = fadeoutTime or defaultFadeoutTime
+	sceneFader.fadeinTime = fadeinTime or defaultFadeinTime
+	sceneFader.setTarget(nextSceneID)
+	manager.setCurrentScene(sceneFaderId)
+
 end
 
 -- Requests that the current scene update itself. dt
 -- is the number of seconds passed since last update.
-function director.update(dt)
+function manager.update(dt)
 	if currentScene and currentScene.update then
 		currentScene.update(dt)
 	end
 end
 
 -- Requests that the current scene render itself
-function director.draw()
+function manager.draw()
 	if currentScene and currentScene.draw then
 		currentScene.draw()
 	end
 end
 
 -- Notifies the current scene that a key has been pressed.
-function director.keypressed(key,unicode)
+function manager.keypressed(key,unicode)
 	if currentScene and currentScene.keypressed then
 		currentScene.keypressed(key,unicode)
 	end
 end
 
-function director.keyreleased(key)
+function manager.keyreleased(key)
 	if currentScene and currentScene.keyreleased then
 		currentScene.keyreleased(key)
 	end
 end
 
-return director;
+manager.addScene(sceneFader,sceneFaderId)
+
+return manager

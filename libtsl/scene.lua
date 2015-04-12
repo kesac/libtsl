@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,39 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
-local lib = {}
+-- This is an example empty scene to show what functions scenes
+-- can define. You do not need to define all of these functions
+-- At the bare minimum draw() should be defined.
 
-local director     = require 'lib.scenedirector'
-local fadescene    = require 'lib.ext.transfader'
-local fadescene_id = '_fader'
+local scene = {}
 
-director.addScene(fadescene,fadescene_id)
-fadescene.setSceneDirector(director)
-
-local defaultFadeoutTime = fadescene.fadeoutTime
-local defaultFadeinTime = fadescene.fadeinTime
-
--- Make all scenedirector functions available
-for k,v in pairs(director) do
-	lib[k] = v
+function scene.initialize(manager)
+    -- called when this scene is added to a scenemanager
+    -- passes the manager as the only argument
 end
 
-function lib.transitionTo(nextSceneID,fadeoutTime,fadeinTime)
-
-	fadescene.fadeoutTime = fadeoutTime or defaultFadeoutTime
-	fadescene.fadeinTime = fadeinTime or defaultFadeinTime
-	fadescene.setTarget(nextSceneID)
-	director.setCurrentScene(fadescene_id)
-
+function scene.load()
+    -- called when the scene becomes the current scene
 end
 
-return lib
+function scene.unload()
+    -- called when the scene is replaced by another scene
+end
 
+function scene.update(dt)
+	-- called when the scene needs to update itself
+end
+
+function scene.draw()
+	-- called when the scene needs to draw itself
+end
+
+function scene.keypressed(key,unicode)
+	-- called when the scene needs to handle a keypressed event
+end
+
+function scene.keyreleased(key,unicode)
+	-- called when the scene needs to handle a key released event
+end
+
+return scene

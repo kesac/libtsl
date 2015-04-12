@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -22,37 +22,33 @@
 
 -- This is an intermediate scene for facilitating
 -- fade-in/fade-out transitions between a pair of
--- screens. Intended to be used with a scenedirector.
--- Transdirector uses this scene implicitly.
+-- screens. SceneManager uses this for its
+-- transitionTo() function.
 
 local fader = {}
-local fadeStart -- Initialized in load()
-local fadeAlpha -- Initialized in load()
-local state     -- Initialized in load()
-local sceneDirector  -- Initialized in setSceneDirector()
+local fadeStart
+local fadeAlpha
+local state
+local sceneManager
 
-
-function fader.init()
+function fader.initialize(manager)
 	-- Can be adjusted by caller
 	fader.fadeoutTime = 0.35 -- Amount of time in seconds spent fading out
 	fader.fadeinTime = 0.35  -- Amount of time in seconds spent fading in
-end
-
-function fader.setSceneDirector(director)
-	sceneDirector = director
+    sceneManager = manager
 end
 
 -- Make sure to set the target screen before
--- letting sceneDirector.display show this screen
+-- letting sceneManager.display show this screen
 -- nextID: id of the screen to fade-transition into
 -- prevID: (optional) id of screen to fade-transition out of
 function fader.setTarget(nextID, prevID)
 	if not prevID then
-		fader.previousScreen = sceneDirector.getCurrentScene()
+		fader.previousScreen = sceneManager.getCurrentScene()
 	else
-		fader.previousScreen = sceneDirector.getScene(prevID)
+		fader.previousScreen = sceneManager.getScene(prevID)
 	end
-	fader.nextScreen = sceneDirector.getScene(nextID)
+	fader.nextScreen = sceneManager.getScene(nextID)
 	fader.nextID = nextID
 end
 
@@ -66,16 +62,6 @@ end
 -- Gradually updates the state and alpha of fade rectangle
 function fader.update(dt)
 
-	--[[ DEBUG ONLY:
-	local diff = love.timer.getTime()-fadeStart
-
-	if diff > fader.fadeoutTime + fader.fadeinTime then
-		state = 'stop'
-		sceneDirector.setCurrentScene(fader.nextID)
-	end
-	--]]
-	
-	---[[
 	local diff = love.timer.getTime()-fadeStart
 	
 	if diff <= fader.fadeoutTime then
@@ -113,7 +99,7 @@ function fader.update(dt)
 		end
 		
 		-- second argument prevents load() and unload() on previous and new screen from being called a second time
-		sceneDirector.setCurrentScene(fader.nextID, false) 
+		sceneManager.setCurrentScene(fader.nextID, false) 
 	end
 	--]]
 
