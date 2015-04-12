@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -25,19 +25,19 @@ local lib = {}
 -- All arguments must be a function
 -- with the first argument used as the 
 -- 'nextCallback'
-function lib.newChain(...)
+function lib.run(...)
 
 	local chain = {}
 	chain.functions = {...}
 	chain.currentIndex = 1
-	chain.run = lib.nextEvent
-	return chain
-	
+	chain.runNext = lib._nextEvent
+    chain:runNext()
+
 end
 
-function lib.nextEvent(chain)
+function lib._nextEvent(chain)
 	if chain.currentIndex <= #chain.functions then
-		chain.functions[chain.currentIndex](function() chain:run() end)
+		chain.functions[chain.currentIndex](function() chain:runNext() end)
 		chain.currentIndex = chain.currentIndex + 1
 	end
 end
