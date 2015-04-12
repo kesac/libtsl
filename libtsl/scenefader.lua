@@ -123,7 +123,6 @@ function fader.draw()
 
 	if state == 'fadeout' then
 		fader._previousScreen.draw()
-        print('printing previous screen')
 	elseif state == 'fadein' then
 		fader._nextScreen.draw()
 	end
