@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,33 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
--- Rudimentary library for table to string and
--- table to file operations. Only converts tables
--- that have non-numeric keys defined. Only correctly
--- converts the following value types: boolean, number,
--- string, and table.
+-- Basic support for writing tables to disk.
 
 local lib = {}
+local FILE_EXTENSION = '.lua'
 
--- Converts a table to a string, then writes
--- the string to the specified filename. Do not
--- include parent directories, just give the filename.
--- It will be placed in %appdata%/LOVE/<identity>.
-function lib.tableToLuaFile(t,filename)
-	love.filesystem.write(filename, 'return ' .. lib.tableToString(t))
+-- Writes the specified table to disk into
+-- %appdata%/LOVE/<identity>/<savename>.lua.
+function lib.save(t,savename)
+
+    if strsub(savename, strlen(savename) - strlen(FILE_EXTENSION)) == FILE_EXTENSION then
+        savename = savename .. FILE_EXTENSION
+    end
+
+	love.filesystem.write(savename, 'return ' .. lib._tableToString(t))
 end
 
--- Converts a table to a string.
-function lib.tableToString(t)
-	return lib._table_to_string(t)
+-- Loads the specified savefile from
+-- %appdata%/LOVE/<identity>/<savename>.lua
+-- and returns it
+function lib.load(savename)
+    return require savename
 end
 
 -- Internal use only. Converts a table to a string.
 -- If there are nested tables, this function will
 -- call itself recursively.
-function lib._table_to_string(t)
+function lib._tableToString(t)
 
 	local str = "{"
 
@@ -57,7 +59,7 @@ function lib._table_to_string(t)
 		elseif t == "string" then
 			str = str .. i .. "=" .. "'" .. v .. "'" .. ","
 		elseif t == "table" then
-			str = str .. i .. "=" ..  lib._to_string(v) .. ","
+			str = str .. i .. "=" ..  lib._tableToString(v) .. ","
 		elseif t == "boolean" then
 			str = str .. i .. "=" .. tostring(v) .. ","
 		else
