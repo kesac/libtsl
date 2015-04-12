@@ -49,7 +49,7 @@
 --]]
 
 local lib = {}
-local utf8 = require 'lib.utf8' -- Dependency, we need it to parse non-ASCII characters properly.
+local utf8 = require 'libtsl.utf8' -- Dependency, we need it to parse non-ASCII characters properly.
 
 -- Window dimensions are initialized in the init() function
 local window = {}

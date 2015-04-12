@@ -32,10 +32,8 @@ local manager = {}
 local scenes = {}
 local currentScene
 
-local sceneFader    = require 'managertsl.scenefader'
+local sceneFader    = require 'libtsl.scenefader'
 local sceneFaderId = '_fader'
-local defaultFadeoutTime = sceneFader.fadeoutTime
-local defaultFadeinTime = sceneFader.fadeinTime
 
 -- Adds a scene to this manager with the specified id
 function manager.addScene(scene, id)
@@ -83,12 +81,8 @@ end
 -- Identical to setCurrentScene() except it gradually fades out the
 -- current scene and fades in the next scene.
 function manager.transitionTo(nextSceneID,fadeoutTime,fadeinTime)
-
-	sceneFader.fadeoutTime = fadeoutTime or defaultFadeoutTime
-	sceneFader.fadeinTime = fadeinTime or defaultFadeinTime
-	sceneFader.setTarget(nextSceneID)
+	sceneFader.setTarget(nextSceneID, fadeoutTime, fadeinTime)
 	manager.setCurrentScene(sceneFaderId)
-
 end
 
 -- Requests that the current scene update itself. dt

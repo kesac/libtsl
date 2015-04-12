@@ -25,6 +25,9 @@
 -- screens. SceneManager uses this for its
 -- transitionTo() function.
 
+local DEFAULT_FADEOUT_TIME = 0.35 -- Amount of time in seconds spent fading out
+local DEFAULT_FADEIN_TIME = 0.35  -- Amount of time in seconds spent fading in
+
 local fader = {}
 local fadeStart
 local fadeAlpha
@@ -33,23 +36,32 @@ local sceneManager
 
 function fader.initialize(manager)
 	-- Can be adjusted by caller
-	fader.fadeoutTime = 0.35 -- Amount of time in seconds spent fading out
-	fader.fadeinTime = 0.35  -- Amount of time in seconds spent fading in
     sceneManager = manager
 end
 
 -- Make sure to set the target screen before
 -- letting sceneManager.display show this screen
--- nextID: id of the screen to fade-transition into
--- prevID: (optional) id of screen to fade-transition out of
-function fader.setTarget(nextID, prevID)
-	if not prevID then
-		fader.previousScreen = sceneManager.getCurrentScene()
-	else
-		fader.previousScreen = sceneManager.getScene(prevID)
-	end
-	fader.nextScreen = sceneManager.getScene(nextID)
-	fader.nextID = nextID
+-- _nextID: id of the screen to fade-transition into
+-- fadeoutTime: (optional) amount of time to spend fading out
+-- fadeinTime: (optional) amount of time to spend fading in
+function fader.setTarget(_nextID, fadeoutTime, fadeinTime)
+	
+	fader._previousScreen = sceneManager.getCurrentScene()
+    
+    if fadeoutTime then
+    	fader._fadeoutTime = fadeoutTime
+    else
+        fader._fadeoutTime = DEFAULT_FADEOUT_TIME
+    end
+
+    if fadeinTime then
+    	fader._fadeinTime = fadeinTime
+    else
+        fader._fadeinTime = DEFAULT_FADEIN_TIME
+    end
+    
+	fader._nextScreen = sceneManager.getScene(_nextID)
+	fader._nextID = _nextID
 end
 
 -- Resets state to 'fadeout'
@@ -64,31 +76,32 @@ function fader.update(dt)
 
 	local diff = love.timer.getTime()-fadeStart
 	
-	if diff <= fader.fadeoutTime then
-		fadeAlpha = 255 * (diff/fader.fadeoutTime)
+	if diff <= fader._fadeoutTime then
+		fadeAlpha = 255 * (diff/fader._fadeoutTime)
 		
-		if fader.previousScreen.update then
-			fader.previousScreen.update(dt)
+		if fader._previousScreen.update then
+			fader._previousScreen.update(dt)
 		end
 	
-	elseif diff > fader.fadeoutTime and state == 'fadeout' then 
+	elseif diff > fader._fadeoutTime and state == 'fadeout' then 
 		state = 'fadein'
 
 		-- Call unload() and load() ourselves when both scenes are not visible.
 		-- We will prevent calls to these functions from happening a second time later below.
-		if fader.previousScreen.unload then
-			fader.previousScreen.unload()
+		--if fader._previousScreen.unload then
+        -- this would've been called already when the scenefader became current
+			--fader._previousScreen.unload()
+		-- end
+		
+		if fader._nextScreen.load then
+			fader._nextScreen.load()
 		end
 		
-		if fader.nextScreen.load then
-			fader.nextScreen.load()
-		end
+	elseif diff > fader._fadeoutTime and diff <= fader._fadeoutTime+fader._fadeinTime then
+		fadeAlpha = 255 - (255 * (diff-fader._fadeoutTime)/(fader._fadeinTime))
 		
-	elseif diff > fader.fadeoutTime and diff <= fader.fadeoutTime+fader.fadeinTime then
-		fadeAlpha = 255 - (255 * (diff-fader.fadeoutTime)/(fader.fadeinTime))
-		
-		if fader.nextScreen.update then
-			fader.nextScreen.update(dt)
+		if fader._nextScreen.update then
+			fader._nextScreen.update(dt)
 		end
 		
 	else
@@ -99,7 +112,7 @@ function fader.update(dt)
 		end
 		
 		-- second argument prevents load() and unload() on previous and new screen from being called a second time
-		sceneManager.setCurrentScene(fader.nextID, false) 
+		sceneManager.setCurrentScene(fader._nextID, false) 
 	end
 	--]]
 
@@ -109,9 +122,10 @@ end
 function fader.draw()
 
 	if state == 'fadeout' then
-		fader.previousScreen.draw()
+		fader._previousScreen.draw()
+        print('printing previous screen')
 	elseif state == 'fadein' then
-		fader.nextScreen.draw()
+		fader._nextScreen.draw()
 	end
 
 	love.graphics.setColor(0,0,0,fadeAlpha)

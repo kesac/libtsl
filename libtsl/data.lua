@@ -29,7 +29,7 @@ local FILE_EXTENSION = '.lua'
 -- %appdata%/LOVE/<identity>/<savename>.lua.
 function lib.save(t,savename)
 
-    if strsub(savename, strlen(savename) - strlen(FILE_EXTENSION)) == FILE_EXTENSION then
+    if string.sub(savename, #savename - #FILE_EXTENSION) == FILE_EXTENSION then
         savename = savename .. FILE_EXTENSION
     end
 
@@ -40,7 +40,7 @@ end
 -- %appdata%/LOVE/<identity>/<savename>.lua
 -- and returns it
 function lib.load(savename)
-    return require savename
+    return require(savename)
 end
 
 -- Internal use only. Converts a table to a string.
