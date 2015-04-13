@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -29,9 +29,9 @@ function lib.create(img,cols,rows,framespeed,startframe,endframe)
 
 	local anima = {}
 	anima.image = img
-	anima.rows = rows
-	anima.cols = cols
-	anima.framespeed = framespeed
+	anima.rows = rows or 1
+	anima.cols = cols or 1
+	anima.framespeed = framespeed or 1.0
 	anima.startframe = startframe or 1
 	anima.endframe = endframe or rows*cols
 	
@@ -108,7 +108,7 @@ end
 
 function lib._draw(animation)
 	if animation.active then	
-		love.graphics.drawq(
+		love.graphics.draw(
 			animation.image,
 			animation.quads[animation.currentframe],
 			animation.x,

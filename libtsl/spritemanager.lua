@@ -1,5 +1,5 @@
 --[[
-	Copyright (c) 2012 Kevin Sacro
+	Copyright (c) 2012, 2015 Kevin Sacro
 
 	Permission is hereby granted, free of charge, to any person obtaining a
 	copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@ local lib = {}
 local animations = {}
 local animation_instances = {}
 
-function lib.defineAnimation(id, spriteanimation)
+function lib.add(id, spriteanimation)
 	animations[id] = spriteanimation
 end
 
