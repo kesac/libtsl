@@ -31,16 +31,38 @@ lib._maps = {}
 lib._currentMap = nil
 lib._mode = nil
 
-
--- expecting either 'atl.Loader' or 'sti'
+-- Provide a reference to the STI library here
 function lib.initialize(lib)
     sti = lib
 end
 
 function lib.define(id, filepath)
     lib._maps[id] = sti.new(filepath)
-end
 
+    local map = lib._maps[id]
+    for i = #map.layers, 1, -1 do -- we iterate backwards as the list may grow while iterating
+        local layer = map.layers[i]
+        
+        -- DEBUG: print(i .. ' ' .. layer.type .. ': ' .. layer.name)
+
+        if layer.type ~= 'tilelayer' then
+            layer.visible = false
+        elseif layer.name == 'Player' then
+        
+            layer.collidable = true
+            layer.visible = false
+        
+            local spriteLayer = map:addCustomLayer('Player',i)
+            function spriteLayer:draw() 
+                if lib.drawSprites then
+                    lib.drawSprites()
+                end
+            end
+            
+        end
+    end -- for
+    
+end
 
 function lib.setCurrentMap(id)
     if lib._maps[id] then
@@ -49,20 +71,11 @@ function lib.setCurrentMap(id)
 end
 
 function lib.update(dt)
-
+    lib._currentMap:update(dt)
 end
 
 function lib.draw()
-
-    love.graphics.setColor(255,255,255,255)
-
-    for i = 1, #lib._currentMap.layers do
-        if lib._currentMap.layers[i].name ~= 'Player' 
-        and lib._currentMap.layers[i].type == 'tilelayer' then
-            lib._currentMap:drawTileLayer(i)
-        end
-    end
-       
+    lib._currentMap:draw()       
 end
 
 return lib
