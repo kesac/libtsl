@@ -26,10 +26,10 @@
 
 local lib = {}
 local sti = nil
-
 lib._maps = {}
-lib._currentMap = nil
 lib._mode = nil
+
+lib.currentMap = nil
 
 -- Provide a reference to the STI library here
 function lib.initialize(lib)
@@ -48,8 +48,6 @@ function lib.define(id, filepath)
         if layer.type ~= 'tilelayer' then
             layer.visible = false
         elseif layer.name == 'Player' then
-        
-            layer.collidable = true
             layer.visible = false
         
             local spriteLayer = map:addCustomLayer('Player',i)
@@ -66,16 +64,16 @@ end
 
 function lib.setCurrentMap(id)
     if lib._maps[id] then
-        lib._currentMap = lib._maps[id]
+        lib.currentMap = lib._maps[id]
     end
 end
 
 function lib.update(dt)
-    lib._currentMap:update(dt)
+    lib.currentMap:update(dt)
 end
 
 function lib.draw()
-    lib._currentMap:draw()       
+    lib.currentMap:draw()       
 end
 
 return lib
