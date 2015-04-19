@@ -21,8 +21,7 @@
 --]]
 
 
--- This is a wrapper for both Advanced Tiled Loader and Simple Tiled Implementation
--- which are libraries for loading and drawing Tiled maps.
+-- This is a wrapper for the Simple Tiled Implementation library
 
 local lib = {}
 local sti = nil

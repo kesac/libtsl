@@ -35,7 +35,6 @@ function lib.create(img,cols,rows,framespeed,startframe,endframe)
 	anima.startframe = startframe or 1
 	anima.endframe = endframe or rows*cols
 	
-	
 	-- We need frame dimensions in order to create quads
 	anima.framewidth  = anima.image:getWidth()  / anima.cols
 	anima.frameheight = anima.image:getHeight() / anima.rows 
@@ -89,26 +88,30 @@ function lib._play(animation, x, y)
 	animation.y = y or 0
 	animation.loop = false
 	animation.active = true
+    return animation
 end
 
 function lib._loop(animation, x, y)
-	if not animation.active then
-		animation.tick = 0
-		animation.currentframe = 1
-		animation.x = x or 0
-		animation.y = y or 0
-		animation.isLooping = true
-		animation.active = true
-	end
+	--if not animation.active then
+    animation.tick = 0
+    animation.currentframe = 1
+    animation.x = x or 0
+    animation.y = y or 0
+    animation.isLooping = true
+    animation.active = true
+    return animation
+	--end
 end
 
 function lib._stop(animation)
 	animation.active = false
+    return animation
 end
 
 function lib._draw(animation)
 	if animation.active then	
-		love.graphics.draw(
+		love.graphics.setColor(255,255,255,255)
+        love.graphics.draw(
 			animation.image,
 			animation.quads[animation.currentframe],
 			animation.x,
