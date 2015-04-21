@@ -80,8 +80,9 @@ end
 
 -- Identical to setCurrentScene() except it gradually fades out the
 -- current scene and fades in the next scene.
-function manager.transitionTo(nextSceneID,fadeoutTime,fadeinTime)
-	sceneFader.setTarget(nextSceneID, fadeoutTime, fadeinTime)
+-- transitionAction executes when the screen is black
+function manager.transitionTo(nextSceneID, transitionAction, fadeoutTime,fadeinTime)
+	sceneFader.setTarget(nextSceneID, transitionAction, fadeoutTime, fadeinTime)
 	manager.setCurrentScene(sceneFaderId)
 end
 

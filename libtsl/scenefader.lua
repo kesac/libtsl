@@ -42,9 +42,10 @@ end
 -- Make sure to set the target screen before
 -- letting sceneManager.display show this screen
 -- _nextID: id of the screen to fade-transition into
+-- transitionAction: (optinal) function to execute when screen is fully black
 -- fadeoutTime: (optional) amount of time to spend fading out
 -- fadeinTime: (optional) amount of time to spend fading in
-function fader.setTarget(_nextID, fadeoutTime, fadeinTime)
+function fader.setTarget(_nextID, transitionAction, fadeoutTime, fadeinTime)
 	
 	fader._previousScreen = sceneManager.getCurrentScene()
     
@@ -60,6 +61,7 @@ function fader.setTarget(_nextID, fadeoutTime, fadeinTime)
         fader._fadeinTime = DEFAULT_FADEIN_TIME
     end
     
+    fader._transitionAction = transitionAction
 	fader._nextScreen = sceneManager.getScene(_nextID)
 	fader._nextID = _nextID
 end
@@ -96,6 +98,10 @@ function fader.update(dt)
 		if fader._nextScreen.load then
 			fader._nextScreen.load()
 		end
+        
+        if fader._transitionAction then
+            fader._transitionAction()
+        end
 		
 	elseif diff > fader._fadeoutTime and diff <= fader._fadeoutTime+fader._fadeinTime then
 		fadeAlpha = 255 - (255 * (diff-fader._fadeoutTime)/(fader._fadeinTime))

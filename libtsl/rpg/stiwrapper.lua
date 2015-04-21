@@ -20,7 +20,6 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
-
 -- This is a wrapper for the Simple Tiled Implementation library
 
 local lib = {}
@@ -29,6 +28,7 @@ lib._maps = {}
 lib._mode = nil
 
 lib.currentMap = nil
+lib.tileWidth = 48
 
 -- Provide a reference to the STI library here
 function lib.initialize(lib)
@@ -37,7 +37,11 @@ end
 
 function lib.define(id, filepath)
     lib._maps[id] = sti.new(filepath)
-
+        
+    if love.filesystem.exists(filepath .. '-script.lua') then
+		lib._maps[id].script = require(filepath .. '-script')
+	end
+    
     local map = lib._maps[id]
     for i = #map.layers, 1, -1 do -- we iterate backwards as the list may grow while iterating
         local layer = map.layers[i]
@@ -46,7 +50,9 @@ function lib.define(id, filepath)
 
         if layer.type ~= 'tilelayer' then
             layer.visible = false
-        elseif layer.name == 'Player' then
+        end
+        
+        if layer.name == 'Player' then
             layer.visible = false
         
             local spriteLayer = map:addCustomLayer('Player',i)
@@ -73,6 +79,24 @@ end
 
 function lib.draw()
     lib.currentMap:draw()       
+end
+
+function lib.getTileEvents(tileX, tileY)
+
+    if lib.currentMap and lib.currentMap.layers['Events'] then
+
+        local layer = lib.currentMap.layers['Events']
+
+        for i = 1, #layer.objects do
+            local object = layer.objects[i]
+            if tileX == math.floor(object.x/lib.tileWidth)
+            and tileY == math.floor(object.y/lib.tileWidth) then
+                return object.properties
+            end
+        end
+    end
+
+    return nil
 end
 
 return lib

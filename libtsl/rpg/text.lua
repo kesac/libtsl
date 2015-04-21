@@ -98,7 +98,7 @@ lib.postDisplayText = nil
 -- to call this, ensure that you set all the attributes below yourself.
 function lib.init(font)
 
-	lib.enabled = false
+	lib.isVisible = false
 	
 	window.left_padding = 16
 	window.top_padding = 16
@@ -119,7 +119,7 @@ end
 -- Also processes speed based instructions.
 function lib.update(dt)
 
-	if not lib.enabled then return end
+	if not lib.isVisible then return end
 
 	--[[
 	if waiting_for_text_advance then
@@ -186,7 +186,7 @@ end
 -- Draws text based on the instructions from the table 'instructions'
 function lib.draw()
 
-	if not lib.enabled then return end
+	if not lib.isVisible then return end
 	
 	love.graphics.setFont(lib.font)
 	love.graphics.setColor(180,180,180)
@@ -237,13 +237,13 @@ end
 -- display.
 function lib.displayText(t, callback)
 
-	lib.enabled = false
+	lib.isVisible = false
 	instructions = lib._convertToInstructions(t)
 	instruction_start = 1
 	instruction_limit = 0
 	instruction_current_line = 1
 	message_scroll_delay = DEFAULT_SCROLL_DELAY
-	lib.enabled = true
+	lib.isVisible = true
 	lib._callback = callback
 	
 	if lib.preDisplayText then
@@ -263,7 +263,7 @@ function lib.advanceText()
 		waiting_for_text_advance = false
 		
 		if instruction_limit == #instructions then
-			lib.enabled = false
+			lib.isVisible = false
 			
 			if lib.postDisplayText then
 				lib.postDisplayText()
