@@ -30,6 +30,12 @@ lib._mode = nil
 lib.currentMap = nil
 lib.tileWidth = 48
 
+lib.physics = {}
+lib.usePhysics = true;
+
+--lib._eventsCache = {}
+
+
 -- Provide a reference to the STI library here
 function lib.initialize(lib)
     sti = lib
@@ -51,7 +57,7 @@ function lib.define(id, filepath)
         if layer.type ~= 'tilelayer' then
             layer.visible = false
         end
-        
+
         if layer.name == 'Player' then
             layer.visible = false
         
@@ -70,6 +76,19 @@ end
 function lib.setCurrentMap(id)
     if lib._maps[id] then
         lib.currentMap = lib._maps[id]
+        lib._eventsCache = {}
+        
+        if lib.usePhysics then
+
+            if lib.physics.world then
+                lib.physics.world:destroy()
+            end
+                   
+            lib.physics.world = love.physics.newWorld(0,0)
+            lib.physics.collision = lib.currentMap:initWorldCollision(lib.physics.world)
+        
+        end
+        
     end
 end
 
@@ -81,22 +100,65 @@ function lib.draw()
     lib.currentMap:draw()       
 end
 
+--[[
+function lib._getCachedTileEvents(tileX, tileY)
+    return lib._eventsCache[tileX .. ',' .. tileY]
+end
+
+function lib._cacheTileEvents(events, tileX, tileY)
+    local cache = {}
+    cache.value = events
+    local key = tileX .. ',' .. tileY
+    lib._eventsCache[key] = cache
+end
+--]]
+
 function lib.getTileEvents(tileX, tileY)
+
+    local events = nil
 
     if lib.currentMap and lib.currentMap.layers['Events'] then
 
-        local layer = lib.currentMap.layers['Events']
+        tileX = tonumber(tileX)
+        tileY = tonumber(tileY)
 
-        for i = 1, #layer.objects do
-            local object = layer.objects[i]
-            if tileX == math.floor(object.x/lib.tileWidth)
-            and tileY == math.floor(object.y/lib.tileWidth) then
-                return object.properties
+        --[[
+        local cached = lib._getCachedTileEvents(tileX, tileY)
+
+        -- If we've checked this tile for events before then we've cached the events already
+        if cached then 
+            if cached.value then -- must be in a nested if-statement to prevent the else block from running
+                events = cached.value
+            end
+            wasCached = true;
+        else -- Else check if there is a match        
+        --]]
+            local layer = lib.currentMap.layers['Events']
+
+            for i = 1, #layer.objects do
+                local object = layer.objects[i]
+
+                local objectX1 = math.floor(object.rectangle[1].x/lib.tileWidth)
+                local objectY1 = math.floor(object.rectangle[1].y/lib.tileWidth)
+                local objectX2 = math.floor(object.rectangle[3].x/lib.tileWidth)
+                local objectY2 = math.floor(object.rectangle[3].y/lib.tileWidth)
+       
+                if (tileX >= objectX1 and tileX <= objectX2)
+                and (tileY >= objectY1 and tileY <= objectY2) then
+                    events = object.properties
+                end
+            end
+         --[[
+            if events then
+                lib._cacheTileEvents(events, tileX, tileY)
+            else
+                lib._cacheTileEvents(nil, tileX, tileY)
             end
         end
+        --]]
     end
-
-    return nil
+    
+    return events
 end
 
 return lib

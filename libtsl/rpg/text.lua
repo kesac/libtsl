@@ -271,6 +271,7 @@ function lib.advanceText()
 			
 			if lib._callback then
 				lib._callback()
+                lib._callback = nil
 			end
 			
 		else
