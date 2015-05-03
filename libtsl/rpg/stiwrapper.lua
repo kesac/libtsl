@@ -31,7 +31,7 @@ lib.currentMap = nil
 lib.tileWidth = 48
 
 lib.physics = {}
-lib.usePhysics = true;
+lib.physics.enabled = true;
 
 --lib._eventsCache = {}
 
@@ -78,13 +78,16 @@ function lib.setCurrentMap(id)
         lib.currentMap = lib._maps[id]
         lib._eventsCache = {}
         
-        if lib.usePhysics then
+        if lib.physics.enabled then
 
-            if lib.physics.world then
-                lib.physics.world:destroy()
+            if not lib.physics.world then
+                lib.physics.world = love.physics.newWorld(0,0)
             end
-                   
-            lib.physics.world = love.physics.newWorld(0,0)
+
+            if lib.physics.collision then
+                lib.physics.collision.body:destroy()
+            end
+
             lib.physics.collision = lib.currentMap:initWorldCollision(lib.physics.world)
         
         end
