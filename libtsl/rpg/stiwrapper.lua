@@ -22,23 +22,27 @@
 
 -- This is a wrapper for the Simple Tiled Implementation library
 
-local lib = {}
+local lib = require('libtsl.observable').new()
 local sti = nil
+
 lib._maps = {}
 lib._mode = nil
-
 lib.currentMap = nil
-lib.tileWidth = 48
-
+lib.currentMapID = nil
+lib.tileWidth = love.physics.getMeter()
 lib.physics = {}
 lib.physics.enabled = true;
 
 --lib._eventsCache = {}
 
-
 -- Provide a reference to the STI library here
-function lib.initialize(lib)
-    sti = lib
+function lib.initialize(stilib)
+    sti = stilib
+
+    if lib.physics.enabled then
+        lib.physics.world = love.physics.newWorld(0,0)
+    end
+    
 end
 
 function lib.define(id, filepath)
@@ -46,6 +50,11 @@ function lib.define(id, filepath)
         
     if love.filesystem.exists(filepath .. '-script.lua') then
 		lib._maps[id].script = require(filepath .. '-script')
+        
+        if lib._maps[id].script.initialize then
+            lib._maps[id].script:initialize(lib)
+        end
+        
 	end
     
     local map = lib._maps[id]
@@ -75,32 +84,45 @@ end
 
 function lib.setCurrentMap(id)
     if lib._maps[id] then
+        
+        if lib.currentMap and lib.currentMap.script and lib.currentMap.script.unload then
+            lib.currentMap.script:unload()
+        end
+        
         lib.currentMap = lib._maps[id]
+        lib.currentMapID = id
         lib._eventsCache = {}
         
+        if lib.currentMap.script and lib.currentMap.script.load then
+            lib.currentMap.script:load()
+        end
+        
         if lib.physics.enabled then
-
-            if not lib.physics.world then
-                lib.physics.world = love.physics.newWorld(0,0)
-            end
 
             if lib.physics.collision then
                 lib.physics.collision.body:destroy()
             end
 
             lib.physics.collision = lib.currentMap:initWorldCollision(lib.physics.world)
-        
         end
-        
     end
 end
 
 function lib.update(dt)
     lib.currentMap:update(dt)
+    
+    if lib.currentMap.script and lib.currentMap.script.update then
+        lib.currentMap.script:update(dt)
+    end
+    
 end
 
 function lib.draw()
     lib.currentMap:draw()       
+    
+    if lib.currentMap.script and lib.currentMap.script.draw then
+        lib.currentMap.script:draw()
+    end
 end
 
 --[[
