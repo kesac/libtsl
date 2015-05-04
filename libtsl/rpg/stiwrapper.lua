@@ -53,6 +53,7 @@ function lib.define(id, filepath)
         
         if lib._maps[id].script.initialize then
             lib._maps[id].script:initialize(lib)
+            lib._maps[id].entities = lib._maps[id].script.entities
         end
         
 	end
@@ -85,8 +86,14 @@ end
 function lib.setCurrentMap(id)
     if lib._maps[id] then
         
-        if lib.currentMap and lib.currentMap.script and lib.currentMap.script.unload then
-            lib.currentMap.script:unload()
+        if lib.currentMap then
+            if lib.currentMap.script and lib.currentMap.script.unload then
+                lib.currentMap.script:unload()
+            end
+            
+            if lib.currentMap.entities then 
+                lib.currentMap.entities:removePhysicsBodies()
+            end
         end
         
         lib.currentMap = lib._maps[id]
@@ -96,9 +103,13 @@ function lib.setCurrentMap(id)
         if lib.currentMap.script and lib.currentMap.script.load then
             lib.currentMap.script:load()
         end
-        
+
         if lib.physics.enabled then
 
+            if lib.currentMap.entities then 
+                lib.currentMap.entities:restorePhysicsBodies()
+            end
+        
             if lib.physics.collision then
                 lib.physics.collision.body:destroy()
             end
@@ -111,8 +122,8 @@ end
 function lib.update(dt)
     lib.currentMap:update(dt)
     
-    if lib.currentMap.script and lib.currentMap.script.update then
-        lib.currentMap.script:update(dt)
+    if lib.currentMap.entities then
+        lib.currentMap.entities:update(dt)
     end
     
 end
@@ -120,8 +131,8 @@ end
 function lib.draw()
     lib.currentMap:draw()       
     
-    if lib.currentMap.script and lib.currentMap.script.draw then
-        lib.currentMap.script:draw()
+    if lib.currentMap.entities then
+        lib.currentMap.entities:draw()
     end
 end
 
@@ -138,7 +149,7 @@ function lib._cacheTileEvents(events, tileX, tileY)
 end
 --]]
 
-function lib.getTileEvents(tileX, tileY)
+function lib.getEventAtTile(tileX, tileY, eventTrigger)
 
     local events = nil
 
@@ -171,6 +182,7 @@ function lib.getTileEvents(tileX, tileY)
                 if (tileX >= objectX1 and tileX <= objectX2)
                 and (tileY >= objectY1 and tileY <= objectY2) then
                     events = object.properties
+                    break
                 end
             end
          --[[
@@ -182,8 +194,16 @@ function lib.getTileEvents(tileX, tileY)
         end
         --]]
     end
+
+    if events then
+        for trigger, action in pairs(events) do
+            if string.lower(trigger) == eventTrigger then
+                return {trigger = trigger, action = action}
+            end
+        end
+    end
     
-    return events
+    return nil
 end
 
 return lib
