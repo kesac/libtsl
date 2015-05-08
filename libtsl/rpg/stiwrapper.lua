@@ -20,10 +20,10 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
--- This is a wrapper for the Simple Tiled Implementation library
+-- This is a mapmanager that uses the Simple Tiled Implementation library internally
 
 local lib = require('libtsl.observable').new()
-local sti = nil
+local sti = require('sti')
 
 lib._maps = {}
 lib._mode = nil
@@ -31,34 +31,27 @@ lib.currentMap = nil
 lib.currentMapID = nil
 lib.tileWidth = love.physics.getMeter()
 lib.physics = {}
-lib.physics.enabled = true;
+lib.physics.world = love.physics.newWorld(0,0)
 
 --lib._eventsCache = {}
 
--- Provide a reference to the STI library here
-function lib.initialize(stilib)
-    sti = stilib
-
-    if lib.physics.enabled then
-        lib.physics.world = love.physics.newWorld(0,0)
-    end
-    
-end
-
 function lib.define(id, filepath)
-    lib._maps[id] = sti.new(filepath)
-        
-    if love.filesystem.exists(filepath .. '-script.lua') then
-		lib._maps[id].script = require(filepath .. '-script')
-        
-        if lib._maps[id].script.initialize then
-            lib._maps[id].script:initialize(lib)
-            lib._maps[id].entities = lib._maps[id].script.entities
-        end
-        
-	end
     
-    local map = lib._maps[id]
+    local map = sti.new(filepath)
+    lib._maps[id] = map
+    map.entities = require('entitymanager').new(lib.physics.world)
+    
+    if love.filesystem.exists(filepath .. '-script.lua') then
+		map.script = require(filepath .. '-script')
+        
+        if map.script.setup then
+            map.script.setup(lib, map.entities)
+        end
+
+	end
+
+    map.entities:removePhysicsBodies()
+    
     for i = #map.layers, 1, -1 do -- we iterate backwards as the list may grow while iterating
         local layer = map.layers[i]
         
@@ -90,10 +83,8 @@ function lib.setCurrentMap(id)
             if lib.currentMap.script and lib.currentMap.script.unload then
                 lib.currentMap.script:unload()
             end
-            
-            if lib.currentMap.entities then 
-                lib.currentMap.entities:removePhysicsBodies()
-            end
+
+            lib.currentMap.entities:removePhysicsBodies()            
         end
         
         lib.currentMap = lib._maps[id]
@@ -104,36 +95,25 @@ function lib.setCurrentMap(id)
             lib.currentMap.script:load()
         end
 
-        if lib.physics.enabled then
-
-            if lib.currentMap.entities then 
-                lib.currentMap.entities:restorePhysicsBodies()
-            end
-        
-            if lib.physics.collision then
-                lib.physics.collision.body:destroy()
-            end
-
-            lib.physics.collision = lib.currentMap:initWorldCollision(lib.physics.world)
+        lib.currentMap.entities:restorePhysicsBodies()
+    
+        if lib.physics.mapCollision then
+            lib.physics.mapCollision.body:destroy()
         end
+
+        lib.physics.mapCollision = lib.currentMap:initWorldCollision(lib.physics.world)
+
     end
 end
 
 function lib.update(dt)
     lib.currentMap:update(dt)
-    
-    if lib.currentMap.entities then
-        lib.currentMap.entities:update(dt)
-    end
-    
+    lib.currentMap.entities:update(dt)
 end
 
 function lib.draw()
     lib.currentMap:draw()       
-    
-    if lib.currentMap.entities then
-        lib.currentMap.entities:draw()
-    end
+    lib.currentMap.entities:draw()
 end
 
 --[[
