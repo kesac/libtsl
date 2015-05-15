@@ -33,13 +33,11 @@ lib.tileWidth = love.physics.getMeter()
 lib.physics = {}
 lib.physics.world = love.physics.newWorld(0,0)
 
---lib._eventsCache = {}
-
 function lib.define(id, filepath)
     
     local map = sti.new(filepath)
     lib._maps[id] = map
-    map.entities = require('entitymanager').new(lib.physics.world)
+    map.entities = require('libtsl.rpg.entitymanager').new(lib.physics.world)
     
     if love.filesystem.exists(filepath .. '-script.lua') then
 		map.script = require(filepath .. '-script')
@@ -50,13 +48,10 @@ function lib.define(id, filepath)
 
 	end
 
-    map.entities:removePhysicsBodies()
-    
-    for i = #map.layers, 1, -1 do -- we iterate backwards as the list may grow while iterating
+    -- we iterate backwards as the list may grow while iterating
+    for i = #map.layers, 1, -1 do 
         local layer = map.layers[i]
         
-        -- DEBUG: print(i .. ' ' .. layer.type .. ': ' .. layer.name)
-
         if layer.type ~= 'tilelayer' then
             layer.visible = false
         end
@@ -84,7 +79,7 @@ function lib.setCurrentMap(id)
                 lib.currentMap.script:unload()
             end
 
-            lib.currentMap.entities:removePhysicsBodies()            
+            lib.currentMap.entities:removePhysicsBodies()       
         end
         
         lib.currentMap = lib._maps[id]
@@ -116,18 +111,6 @@ function lib.draw()
     lib.currentMap.entities:draw()
 end
 
---[[
-function lib._getCachedTileEvents(tileX, tileY)
-    return lib._eventsCache[tileX .. ',' .. tileY]
-end
-
-function lib._cacheTileEvents(events, tileX, tileY)
-    local cache = {}
-    cache.value = events
-    local key = tileX .. ',' .. tileY
-    lib._eventsCache[key] = cache
-end
---]]
 
 function lib.getEventAtTile(tileX, tileY, eventTrigger)
 
@@ -138,41 +121,22 @@ function lib.getEventAtTile(tileX, tileY, eventTrigger)
         tileX = tonumber(tileX)
         tileY = tonumber(tileY)
 
-        --[[
-        local cached = lib._getCachedTileEvents(tileX, tileY)
+        local layer = lib.currentMap.layers['Events']
 
-        -- If we've checked this tile for events before then we've cached the events already
-        if cached then 
-            if cached.value then -- must be in a nested if-statement to prevent the else block from running
-                events = cached.value
-            end
-            wasCached = true;
-        else -- Else check if there is a match        
-        --]]
-            local layer = lib.currentMap.layers['Events']
+        for i = 1, #layer.objects do
+            local object = layer.objects[i]
 
-            for i = 1, #layer.objects do
-                local object = layer.objects[i]
-
-                local objectX1 = math.floor(object.rectangle[1].x/lib.tileWidth)
-                local objectY1 = math.floor(object.rectangle[1].y/lib.tileWidth)
-                local objectX2 = math.floor(object.rectangle[3].x/lib.tileWidth)
-                local objectY2 = math.floor(object.rectangle[3].y/lib.tileWidth)
-       
-                if (tileX >= objectX1 and tileX <= objectX2)
-                and (tileY >= objectY1 and tileY <= objectY2) then
-                    events = object.properties
-                    break
-                end
-            end
-         --[[
-            if events then
-                lib._cacheTileEvents(events, tileX, tileY)
-            else
-                lib._cacheTileEvents(nil, tileX, tileY)
+            local objectX1 = math.floor(object.rectangle[1].x/lib.tileWidth)
+            local objectY1 = math.floor(object.rectangle[1].y/lib.tileWidth)
+            local objectX2 = math.floor(object.rectangle[3].x/lib.tileWidth)
+            local objectY2 = math.floor(object.rectangle[3].y/lib.tileWidth)
+   
+            if (tileX >= objectX1 and tileX <= objectX2)
+            and (tileY >= objectY1 and tileY <= objectY2) then
+                events = object.properties
+                break
             end
         end
-        --]]
     end
 
     if events then
