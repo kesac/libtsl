@@ -20,10 +20,15 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
--- Movement patterns for entities
+---- Defines movement patterns for entities. (Replace an
+---- entity's updateMovement() function with one of the
+---- functions defined here.)
 
 local lib = {}
 
+--- Replacing an entity's updateMovement() function
+--- with this function causes it to walk in random
+--- "bursts" in random dirctions.
 function lib:randomWalk(dt, force)
   
     if not self.movedelay then

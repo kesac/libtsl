@@ -20,11 +20,14 @@
 	USE OR OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
+---- Provides support for running asynchronous sequences of functions.
+
 local lib = {}
 
--- All arguments must be a function
--- with the first argument used as the 
--- 'nextCallback'
+--- Runs the specified sequence of functions to one after another. 
+--- Each function (except for the last one in the chain) must take a
+--- single callback function as an argument and run that callback function
+--- when finished its own work.
 function lib.run(...)
 
 	local chain = {}
