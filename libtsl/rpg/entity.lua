@@ -120,9 +120,11 @@ function entity:setTileLocation(tileX, tileY)
 end
 
 function entity:initializeBody()
-    self.physics.body = love.physics.newBody(self.physics.world, self.x, self.y, 'dynamic')
-    self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
-    self.physics.body:setLinearDamping(self.friction)
+    if self.physics.body then
+        self.physics.body = love.physics.newBody(self.physics.world, self.x, self.y, 'dynamic')
+        self.physics.fixture = love.physics.newFixture(self.physics.body, self.physics.shape)
+        self.physics.body:setLinearDamping(self.friction)
+    end
 end
 
 function entity:destroyBody()

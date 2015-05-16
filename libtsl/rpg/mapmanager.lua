@@ -59,7 +59,7 @@ function lib.define(id, filepath)
         if layer.name == 'Player' then
             layer.visible = false
         
-            local spriteLayer = map:addCustomLayer('Player',i)
+            local spriteLayer = map:addCustomLayer('Sprites',i)
             function spriteLayer:draw() 
                 if lib.drawSprites then
                     lib.drawSprites()
